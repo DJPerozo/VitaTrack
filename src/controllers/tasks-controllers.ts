@@ -4,6 +4,7 @@ import Project from '../models/Projects';
 import Task from '../models/Tasks';
 import { FindAndCountOptions } from 'sequelize';
 
+
 class TasksControllers{
   static create = async ( req: Request, res: Response ): Promise<void> => {
     const transaction = await sequelize.transaction();
@@ -44,10 +45,13 @@ class TasksControllers{
   };
 
   static getAll = async ( req: Request, res: Response ): Promise<void> => {
-    const { project_id, limit } = req.query;
-    const parsetlimit = limit ? limit : 10;
+    const { project_id, limit } = req.query as {
+      project_id?: number,
+      limit?: number
+    };
+
     try {
-      const options: any = {
+      const options: FindAndCountOptions<Task> = {
         where: { userId: req.user.id },
         include: [{
           model: Project,
@@ -56,7 +60,7 @@ class TasksControllers{
         order: [
           ['id', 'DESC']
         ],
-        limit: parsetlimit
+        limit: limit || 10
       };
 
       if (project_id) {
@@ -95,8 +99,8 @@ class TasksControllers{
   static update = async ( req: Request, res: Response ): Promise<void> => {
     const { title, description, completed } = req.body;
     try {
-      const newproject = await req.tasks.update({title, description,  completed});
-      res.status(200).json({msg: 'Exito Proyecto actualizado', newproject});
+      const newTasks = await req.tasks.update({title, description,  completed});
+      res.status(200).json({msg: 'Exito Proyecto actualizado', newTasks});
       return;
 
     } catch (error) {

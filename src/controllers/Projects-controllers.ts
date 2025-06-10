@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import Project from "../models/Projects";
 import Task from "../models/Tasks";
+import { FindAndCountOptions } from "sequelize";
 
 
 class ProjectsControllers{
@@ -22,20 +23,26 @@ class ProjectsControllers{
   };
 
   static getAll = async ( req: Request, res: Response ): Promise<void> => {
-    const { limit, estado } = req.query;
-    const limitt = limit ? limit : 10;
-    const estados = estado ? estado : null;
+    const { limit, estado } = req.query as {
+      limit?: number,
+      estado?: string
+    }
+
     try {
-      const option: any = {
+      const option: FindAndCountOptions<Project> = {
         where:{userId: req.user.id},
         include: [{
           model: Task,
           attributes: ['id', 'title', 'description', 'completed']
         }],
-        limit: limitt
+        limit: limit || 10
       };
+      
       if (estado) {
-        option.where.estado=estados 
+        option.where = {
+          estado: estado,
+          userId: req.user.id
+        }
       };
 
       const projects = await Project.findAndCountAll(option);

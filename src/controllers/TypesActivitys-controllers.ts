@@ -3,12 +3,14 @@ import TypesActivity from '../models/TypesActivity';
 import SportsActivity from '../models/SportsActivities';
 import { FindAndCountOptions } from 'sequelize';
 
-class TypesActivitysControllers{
+class TypesActivitysControllers{ 
   static getAll = async ( req: Request, res: Response ): Promise<void>  => {
-    const { category, limit } = req.query;
-    const limitt = limit ? limit : 10;
+    const { category, limit } = req.query as {
+      category?: string,
+      limit?: number
+    };
     try {
-      const options: any = {
+      const options: FindAndCountOptions<TypesActivity> = {
         where: { userId: req.user.id },
         order: [
           ['id', 'DESC']
@@ -17,12 +19,16 @@ class TypesActivitysControllers{
           model: SportsActivity,
           attributes: ['id', 'duration', 'intensity', 'userId']
         }],
-        limit : limitt
+        limit : limit || 10
 
       }
       if (category) {
-        options.where.category=category
-      }
+        options.where = {
+          category: category,
+          userId: req.user.id
+        }
+      };
+
       const typesActivity = await TypesActivity.findAndCountAll(options);
       res.status(200).json({ TiposActividades: typesActivity.rows, total: typesActivity.count });
     } catch (error) {

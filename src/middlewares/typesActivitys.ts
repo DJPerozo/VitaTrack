@@ -31,10 +31,12 @@ export async function validateTypesActivitysExis( req: Request, res: Response, n
 export async function validateTypesActivitysUpdate( req: Request, res: Response, next: NextFunction ): Promise<void> {
   await body('name')
     .notEmpty().withMessage('El nombre del tipo de la activida es requerido')
+    .isString().withMessage('El nombre debe de ser una cadena de texto validad')
     .isLength({min: 3}).withMessage('El nombre de la Categoria es muy Corto, minimo 3 caracteres')
     .run(req)
   await body('category')
     .notEmpty().withMessage('La categoria de la actividad es requerida Ej: "cardio","fuerza","flexibilidad" ')
+    .isString().withMessage('La categoria debe de ser una cadena de texto valida')
     .isIn(['cardio','fuerza','flexibilidad']).withMessage('La categoria no es valida Ej: "cardio","fuerza","flexibilidad" ')
     .run(req)
   next();
@@ -43,12 +45,14 @@ export async function validateTypesActivitysUpdate( req: Request, res: Response,
 export async function query_typesActivitys( req: Request, res: Response, next: NextFunction ): Promise<void> {
   await query('category')
     .optional()
+    .isString().withMessage('La categoria no es validad debe de venir en formato String')
     .custom(value => typeof value === 'string').withMessage('La Categoria no es valida debe de ser un String')
     .isIn(['cardio','fuerza','flexibilidad']).withMessage('La categoria no es valida Ej: "cardio","fuerza","flexibilidad" ')
     .run(req)
   await query('limit')
     .optional()
-    .isInt({ min: 1 }).withMessage('La cantidad no es valida')
+    .default(10)
+    .isInt({ min: 1, max: 30 }).withMessage('La cantidad debe de ser un numero valido entre 1 y 30')
     .run(req)
   const error = validationResult(req);
   if (!error.isEmpty()) {

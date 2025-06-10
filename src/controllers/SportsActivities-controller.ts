@@ -36,25 +36,28 @@ class SportsActivities{
   };
 
   static getAll = async ( req: Request, res: Response ): Promise<void> => {
-    const { intensidad, limit } = req.query;
-    const limitt = limit ? limit : 10;
+    const { intensidad, limit } = req.query as {
+      intensidad?: string,
+      limit?: number
+    }
     try {
-      const options: any = {
-        where: {
-          userId: req.user.id
-        },
+      const options: FindAndCountOptions = {
+        where: { userId: req.user.id },
         order: [
           ['id', 'DESC']
         ],
         include: [{
           model: TypesActivity,
-          attributes: ['id', 'name', 'category', 'userId']
+          attributes: ['id', 'name', 'category', 'userId', 'sportsActivityId']
         }],
-        limit: limitt
+        limit: limit || 10
       };
 
       if (intensidad) {
-        options.where.intensity=intensidad
+        options.where = {
+          intensity: intensidad,
+          userId: req.user.id
+        }
       
       };
 
@@ -74,7 +77,7 @@ class SportsActivities{
       const sportsActivities = await SportsActivity.findByPk(req.sports_activities.id, {
         include: [{
           model: TypesActivity,
-          attributes: ['id', 'name', 'category', 'userId']
+          attributes: ['id', 'name', 'category', 'userId', 'sportsActivityId']
         }]
       });
       res.status(200).json({msg: 'Exito', sportsActivities});
@@ -104,7 +107,7 @@ class SportsActivities{
   static delete = async ( req: Request, res: Response ): Promise<void> => {
     try {
       await req.sports_activities.destroy();
-      res.status(200).json({msg: 'La Actividad deportiva se elimino Correctamente'});
+      res.status(200).json({msg: 'La Actividad deportiva se Elimino Correctamente'});
       return;
     } catch (error) {
       console.error('algo salio mal', error);

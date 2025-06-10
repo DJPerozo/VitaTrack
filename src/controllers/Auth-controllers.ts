@@ -37,7 +37,6 @@ class AuthControllers{
         token: user.token
       })
 
-
       res.status(201).json({msg: 'Exito su cuenta ya esta casi lista revise su email y inserte el codigo para confirmar cuenta'});
       return;
 

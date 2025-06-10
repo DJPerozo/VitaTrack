@@ -37,10 +37,12 @@ export async function validateSportsActivitiesInput( req: Request, res: Response
 export async function validateSportsActivitiesupdate( req: Request, res: Response, next: NextFunction ): Promise<void> {
   await body('duration')
     .notEmpty().withMessage('La duracion de la activida no puede ir vacia')
+    .isString().withMessage('La duracion debe de venir en formato String')
     .custom(value => typeof value === 'string').withMessage('La duracion debe de venir en formato String con detalles ej: 30:00 min de trote y 1:00hr de Calistenia')
     .run(req)
   await body('intensity')
     .notEmpty().withMessage('La intencidad de la actividad no puede ir vacia Ej: "leve","moderada","alta","extrema" ')
+    .isString().withMessage('La intensidad debe de venir en formato String')
     .isIn(['leve','moderada','alta','extrema']).withMessage("La intensidad no es valida Ej: 'leve','moderada','alta','extrema'")
     .run(req)
   next();  
@@ -49,12 +51,12 @@ export async function validateSportsActivitiesupdate( req: Request, res: Respons
 export async function query_sportsActivities( req: Request, res: Response, next: NextFunction ): Promise<void> {
   await query('intensidad')
     .optional()
-    .custom(value => typeof value === 'string').withMessage('La intencidad debe de venir en formato String')
+    .isString().withMessage('La intensidad debe de ser en Formato String')
     .isIn(['leve','moderada','alta','extrema']).withMessage('La intensidad no es valida Ej: "leve","moderada","alta","extrema" ')
     .run(req)
   await query('limit')
     .optional()
-    .isInt({min: 1}).withMessage('La Cantidad no es valida')
+    .isInt({min: 1, max: 30}).withMessage('La Cantidad debe de ser un entero valido entre 1 y 30')
     .run(req)  
   const errror = validationResult(req);
   if (!errror.isEmpty()) {

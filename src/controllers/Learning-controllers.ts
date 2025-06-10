@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import Learning from '../models/Learning';
 import { endOfDay, isValid, parseISO, startOfDay } from 'date-fns';
-import { Op } from 'sequelize';
+import { FindAndCountOptions, Op } from 'sequelize';
 
 class LearningControllers{
   static creata = async ( req: Request, res: Response ): Promise<void> => {
@@ -23,15 +23,18 @@ class LearningControllers{
     }
   };
 
+  // implemente mejoras en el tipado de las query tipado mas estripto con typescript en todos los rutas de mi aplicacion....Tambien ise unas mejoras en las validacion de entrada de datos.
   static getAll = async ( req: Request, res: Response ): Promise<void> => {
-    const { fecha } = req.query;
+    const { fecha } = req.query as {
+      fecha?: string
+    }
     try {
-      const option: any = {
+      const option: FindAndCountOptions<Learning> = {
         where: {userId: req.user.id}
       };
 
       if (fecha) {
-        const date = parseISO(fecha as string);
+        const date = parseISO(fecha);
         if (!isValid(date)) {
           res.status(400).json({msg: 'La fecha no es validad'});
           return;
@@ -40,9 +43,12 @@ class LearningControllers{
         const star = startOfDay(date);
         const end = endOfDay(date);
 
-        option.where.createdAt= {
-          [Op.between]: [star, end]
-        } 
+        option.where = {
+          createdAt:{ 
+            [Op.between] : [star, end]
+          },
+          userId: req.user.id
+        }
         
       };
 
@@ -91,7 +97,7 @@ class LearningControllers{
   static delete = async ( req: Request, res: Response ): Promise<void> => {
     try {
       await req.learning.destroy();
-      res.status(200).json({msg: 'Exito Aprendizaje Eliminado'});
+      res.status(200).json({msg: 'El tema de Aprendizaje se Elimino con Exito'});
       return;
     } catch (error) {
       console.error('lago salio mal',error);

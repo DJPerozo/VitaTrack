@@ -42,24 +42,25 @@ export async function validateTasksInput( req: Request, res: Response, next: Nex
     .isInt({min: 1}).withMessage('El ID del proyecto no es valido')
     .run(req)
   next()      
-
 };
 
 export async function validateTasksUpdate( req: Request, res: Response, next: NextFunction ): Promise<void> {
   await body('title')
     .notEmpty().withMessage('El titulo de la tarea no puede ir vacio')
-    .custom(value => typeof value === 'string').withMessage('El titulo de la tarea debe de ser String')
+    .isString().withMessage('El titulo debe de ser una cadena de texto valida')
+    .isLength({min: 1}).withMessage('El titulo debe de contener al menos un caracter de longitud')
     .run(req)
   await body('description')
     .notEmpty().withMessage('La descripcion de la tarea es requerida')
-    .isLength({min: 5}).withMessage('La descripcion de la tarea es muy corta, minimo 5 caracteres')
+    .isString().withMessage('La descripcion debe de ser una cadena de Texo valida')
+    .isLength({min: 5, max: 250}).withMessage('La descripcion debe de una cadena de texo valida entre 5 y 250 caracteres')
     .run(req)
   await body('completed')
     .isBoolean().withMessage('el estado no es valido debe de ser true o false')
+    .isIn([false, true]).withMessage('El estado de completado no es valido valores: "true" o "false"')
     .run(req)  
   next()   
 };
-
 
 export async function query_tasks( req: Request, res: Response, next: NextFunction ): Promise<void> {
   await query('project_id')
@@ -68,7 +69,8 @@ export async function query_tasks( req: Request, res: Response, next: NextFuncti
     .run(req)
   await query('limit')
     .optional()
-    .isInt().withMessage('La cantidad no es valida')
+    .default(10)
+    .isInt({min: 1, max: 30}).withMessage('La cantidad debe de ser un numero entero valido de 1 a 30')
     .run(req)  
   const error = validationResult(req);
   if (!error.isEmpty()) {

@@ -34,10 +34,12 @@ export async function validateLearningExis( req: Request, res: Response, next: N
 export async function validateLearningInput( req: Request, res: Response, next: NextFunction ): Promise<void> {
   await body('issue')
     .notEmpty().withMessage('El tema es Requerido')
+    .isString().withMessage('El tema debe de ser una cadena de caracteres valida')
     .isLength({min: 2}).withMessage('El nombre del tema es muy corto, minimo 2 caracteres')
     .run(req)
   await body('content')
     .notEmpty().withMessage('El contenido del Aprendisaje es requeriso')
+    .isString().withMessage('El contenido debe de ser una cadena de caracteres Valida')
     .isLength({min: 5}).withMessage('El contenido del contenido es muy corto')
     .run(req)
   await body('resources')
@@ -46,16 +48,17 @@ export async function validateLearningInput( req: Request, res: Response, next: 
     .run(req)
   await body('grades')
     .optional()
+    .isString().withMessage('Las notas deben de ser una una cadena de texto valida')
     .custom(value => typeof value === 'string').withMessage('Las Notas deben estar en Formato String')
     .run(req) 
   next()   
 
 };
 
-
 export async function query_learning( req: Request, res: Response, next: NextFunction ): Promise<void> {
   await query('fecha')
     .optional()
+    .isString().withMessage('la fecha no es valida')
     .custom(value => typeof value === 'string').withMessage('la Fecha no es valida')
     .run(req)
   const error = validationResult(req);
